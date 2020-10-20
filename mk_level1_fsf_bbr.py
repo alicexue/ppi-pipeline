@@ -262,6 +262,47 @@ def mk_level1_fsf_bbr(a):
         print "ERROR: Could not find condition key in %s"%(os.path.join(a.basedir,a.studyid,'model/level1/model-%s'%a.modelname))
         sys.exit(-1)
 
+    # read in convolution settings for each ev
+    # if it's a json file
+    conv_key_json = os.path.join(a.basedir,a.studyid,'model/level1/model-%s/convolve_condition_key.json'%a.modelname)
+    conv_settings = [] # store as array because conditions is stored as array
+    if os.path.exists(conv_key_json):
+        convdict = json.load(open(conv_key_json), object_pairs_hook=OrderedDict) # keep the order of the keys as they were in the json file
+        if a.taskname in convdict.keys():
+            # set conddict to the dictionary for this task where
+                # the EV names are the keys
+                # and the names of the conditions are the values
+            convdict = convdict[a.taskname]
+            # doesn't take into account condition_key.txt
+            assert convdict.keys() == conddict.keys() # EV names in conditions_key.json and convolve_conditions_key.json must be the same
+            for ev_key,setting_value in convdict.items():
+                assert int(setting_value) in range(0,7) # convolution setting must be int in between 0 and 6
+                conv_settings.append(setting_value)
+        else:
+            print "ERROR: Task name %s was not found in convole_condition_key.json. Make sure the JSON file is formatted correctly"%(a.taskname)
+            sys.exit(-1)
+    else:
+        print "ERROR: Could not find convole_conditions_key.json in %s"%(os.path.join(a.basedir,a.studyid,'model/level1/model-%s'%a.modelname))
+        sys.exit(-1)
+
+    # read in interaction details
+    # if it's a json file
+    itrc_key_json = os.path.join(a.basedir,a.studyid,'model/level1/model-%s/interaction_key.json'%a.modelname)
+    if os.path.exists(itrc_key_json):
+        itrcdict = json.load(open(itrc_key_json), object_pairs_hook=OrderedDict) # keep the order of the keys as they were in the json file
+        if a.taskname in itrcdict.keys():
+            # set conddict to the dictionary for this task where
+                # the EV names are the keys
+                # and the names of the conditions are the values
+            itrcdict = itrcdict[a.taskname]
+        else:
+            print "ERROR: Task name %s was not found in interaction_key.json. Make sure the JSON file is formatted correctly"%(a.taskname)
+            sys.exit(-1)
+    else:
+        print "ERROR: Could not find interaction_key.json in %s"%(os.path.join(a.basedir,a.studyid,'model/level1/model-%s'%a.modelname))
+        sys.exit(-1)
+
+
     # not tested yet
     # check for orthogonalization file
     orth={}
@@ -431,7 +472,12 @@ def mk_level1_fsf_bbr(a):
 
     # iterate through the EVs
     for ev in range(len(conditions)):
-        outfile.write('\n\nset fmri(evtitle%d) "%s"\n'%(ev+1,conditions[ev]))
+        if conditions[ev].startswith('*interaction*_'):
+            parts = conditions[ev].split('*interaction*_')
+            name = parts[-1] # remove '*interaction*_' from EV name
+            outfile.write('\n\nset fmri(evtitle%d) "%s"\n'%(ev+1,name))
+        else:
+            outfile.write('\n\nset fmri(evtitle%d) "%s"\n'%(ev+1,conditions[ev]))
 
         ## get the full path of the EV file
         # if it's a json file
@@ -445,15 +491,48 @@ def mk_level1_fsf_bbr(a):
             condfile='%s/onsets/%s_task-%s_run-%s_ev-%03d.txt'%(model_subdir,subid_ses,a.taskname,a.runname,ev+1)
         # if the EV file exists
         if os.path.exists(condfile):
-            outfile.write('set fmri(shape%d) 3\n'%(ev+1))
-            outfile.write('set fmri(custom%d) "%s"\n'%(ev+1,condfile))
+            outfile.write('# Basic waveform shape\n')
+            outfile.write('# 0 : Square\n')
+            outfile.write('# 1 : Sinusoid\n')
+            outfile.write('# 2 : Custom (1 entry per volume)\n')
+            outfile.write('# 3 : Custom (3 column format)\n')
+            outfile.write('# 4 : Interaction\n')
+            outfile.write('# 10 : Empty (all zeros)\n')
+    
+            shape = 3
+            if conditions[ev].startswith('*interaction*_'):
+                shape = 4
+            outfile.write('set fmri(shape%d) %d\n'%(ev+1,shape))
+            if not conditions[ev].startswith('*interaction*_'):
+                outfile.write('set fmri(custom%d) "%s"\n'%(ev+1,condfile))
+            
+            if conditions[ev].startswith('*interaction*_'): # if user indicates this is an interaction
+                for ev_int in range(ev):
+                    outfile.write('# Interactions (EV %d with EV %d\n'%(ev+1,ev_int+1))
+                    if ev_int+1 in itrcdict[conditions[ev]]["btwn_evs"]:
+                        outfile.write('set fmri(interactions%d.%d) 1\n'%(ev+1,ev_int+1))
+                    else:
+                       outfile.write('set fmri(interactions%d.%d) 0\n'%(ev+1,ev_int+1))
+                    
+                    outfile.write('# Demean before using in interactions (EV %d with EV %d)\n'%(ev+1,ev_int+1))
+                    if itrcdict[conditions[ev]]["make_zero"][ev_int] == "min":
+                        outfile.write('set fmri(interactions%d.%d) 0\n'%(ev+1,ev_int+1))
+                    elif itrcdict[conditions[ev]]["make_zero"][ev_int] == "centre":
+                        outfile.write('set fmri(interactions%d.%d) 1\n'%(ev+1,ev_int+1))
+                    elif itrcdict[conditions[ev]]["make_zero"][ev_int] == "mean":
+                        outfile.write('set fmri(interactions%d.%d) 2\n'%(ev+1,ev_int+1))
+                    else:
+                        print 'ERROR: "make_zero" values in condition key must be "min", "centre", or "mean. Make sure the file is formatted correctly.'
+                        outfile.close()
+                        sys.exit(-1)
+                        
         # if the EV file is missing
         else:
              outfile.write('set fmri(shape%d) 10\n'%(ev+1))
              print '%s is missing, using empty EV'%condfile
              empty_evs.append(ev+1)
-             
-        outfile.write('set fmri(convolve%d) 3\n'%(ev+1))
+        
+        outfile.write('set fmri(convolve%d) %d\n'%(ev+1,int(conv_settings[ev])))
         outfile.write('set fmri(convolve_phase%d) 0\n'%(ev+1))
         outfile.write('set fmri(tempfilt_yn%d) 1\n'%(ev+1))
         outfile.write('set fmri(deriv_yn%d) 1\n'%(ev+1))
@@ -477,8 +556,14 @@ def mk_level1_fsf_bbr(a):
         # make a T contrast for each EV
         outfile.write('set fmri(conpic_real.%d) 1\n'%(ev+1))
         outfile.write('set fmri(conpic_orig.%d) 1\n'%(ev+1))
-        outfile.write('set fmri(conname_real.%d) "%s"\n'%(ev+1,conditions[ev]))
-        outfile.write('set fmri(conname_orig.%d) "%s"\n'%(ev+1,conditions[ev]))
+        if conditions[ev].startswith('*interaction*_'):
+            parts = conditions[ev].split('*interaction*_')
+            name = parts[-1] # remove '*interaction*_' from EV name
+            outfile.write('set fmri(conname_real.%d) "%s"\n'%(ev+1,name))
+            outfile.write('set fmri(conname_orig.%d) "%s"\n'%(ev+1,name))
+        else:
+            outfile.write('set fmri(conname_real.%d) "%s"\n'%(ev+1,conditions[ev]))
+            outfile.write('set fmri(conname_orig.%d) "%s"\n'%(ev+1,conditions[ev]))
         for evt in range(nevs*2):
             outfile.write('set fmri(con_real%d.%d) %d\n'%(ev+1,evt+1,int(evt==(ev*2))))
             if (evt==(ev*2)):
@@ -526,7 +611,11 @@ def mk_level1_fsf_bbr(a):
                     outfile.write('set fmri(con_orig%d.%d) %s\n'%(contrastctr,evt+1,contrasts[c][evt]))
                 else:
                     outfile.write('set fmri(con_orig%d.%d) 0\n'%(contrastctr,evt+1))
-
+                    
+            for evt in range(nevs):
+                outfile.write('#Mask real contrast/F-test %d with real contrast/F-test %d?\n'%(contrastctr,evt+1))
+                outfile.write('set fmri(conmask%d_%d) 0\n'%(contrastctr,evt+1))
+            
             contrastctr+=1
     
     # Add confound EVs text file

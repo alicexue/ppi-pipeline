@@ -1,4 +1,6 @@
-# fmri-pipeline
+# ppi-pipeline* 
+\* this is a copy of [fmri-pipeline](https://github.com/alicexue/fmri-pipeline) with added functionality to run PPI analyses  
+\* has yet to be thoroughly tested
 
 ## Overview:
 - manage_flywheel_downloads.py can download fmriprep outputs (including freesurfer outputs + html/svg reports) and can export raw BIDS from Flywheel
@@ -39,6 +41,78 @@
 7. To run level 1, use run_level1.py, which will create a job array where each job creates a *.fsf file for one run and runs feat on that run. (By default, if the argument specificruns is not specified, fsf's will be created for all runs)
 8. Level 2 and level 3 are run similarly. Use the -h option to see explanations of the parameters
 
+
+:bangbang::bangbang::bangbang: **The following section is unique to ppi-pipeline.* 
+#### For running ppi analyses:
+1. To indicate which EV in conditions.json is for the interaction, the EV name in conditions.json must be preceded by `*interaction*_`. This will make sure the appropriate waveform shape is used.
+    - Example conditions.json:  
+        ```
+        {"distance":
+            {"1":"abs",
+            "2":"rep",
+            "3":"phys-hpc",
+            "4":"*interaction*_ppi_abs",
+            "5":"*interaction*_ppi_rep",
+            "6":"rt",
+            "7":"missed",
+            "8":"liking"
+            }
+        }
+        ```
+2. Add interaction_key.json to indicate which EVs should be used in interactions. It should be located in the same directory as conditions.json. 
+    - Example interaction_key.json:  
+        ```
+        {"distance":
+            {"*interaction*_ppi_abs":
+                {
+                        "btwn_evs": ["1", "2", "3"],
+                        "make_zero": ["centre","min","mean"]
+                }
+            },
+            {"*interaction*_ppi_rep":
+                {
+                        "btwn_evs": ["1", "2", "3", "4"],
+                        "make_zero": ["min","centre","mean","min"]
+                }
+            }
+        }
+        ```
+    Here, "distance" is the task name.   
+    
+    "ppi_abs" is the name of the first interaction (EV4) between EV1 (psy) and EV3 (phys).  The value of "make_zero" for this interaction is ["centre","min","mean"], which treats EV1 as the task time course and EV3 as the ROI time course. To ignore EV2, "min" is in the position that corresponds to EV2 in the "make_zero" array).   
+    
+    "ppi_rep" is the name of the interaction between EVs 2 and 3, so in the "make_zero" array, "centre" and "mean" are in the positions that correspond to EV2 and EV3, respectively.   
+    
+    See [PPI how to run](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/PPIHowToRun) and [PPI zeroing](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/PPIZeroing) for more details about these settings.   
+    
+    Note that `*interaction*_` precedes each interaction name.  
+
+3. Add convole_condition_key.json to indicate which type of convolution to use for each EV. It should be located in the same directory as conditions.json. 
+    - Example convolve_condition_key.json:  
+    ```
+    {"distance":
+        {"1":3,
+        "2":3,
+        "3":0,
+        "4":0,
+        "5":0,
+        "6":3,
+        "7":3,
+        "8":3
+        }
+    }
+    ```
+    The format here is similar to that of conditions.json, except the value for each condition name is the convolution type. Here is a key for different options:
+    |  Number |  Convolution |
+    |:---|:---|
+    |  0  |  None  |
+    |  1  |  Gaussian  |
+    |  2  |  Gamma  |
+    |  3  |  Double-Gamma HRF  |
+    |  4  |  Gamma basis functions |
+    |  5  |  Sine basis functions |
+    |  6  |  FIR basis functions  |
+
 ## Directory Structure:
 - Session directories are optional. If there aren't multiple sessions, omit the session label from EV file names.
 ```
@@ -51,37 +125,39 @@ basedir
     └───freesurfer
     │
     └───fmriprep
-    │	│
-    │	└───anat (can have preprocessed data here or below, under ses-<sesname>)
-    │	│
-    │	└───ses-<sesname>
-    │	    │
-    │	    └───anat (can have preprocessed data here)
-    │	    │
-    │	    └───func (has preprocessed data)
+    │    │
+    │    └───anat (can have preprocessed data here or below, under ses-<sesname>)
+    │    │
+    │    └───ses-<sesname>
+    │        │
+    │        └───anat (can have preprocessed data here)
+    │        │
+    │        └───func (has preprocessed data)
     │
     └───model
         │
         └───level<N>
-	    │
-	    └───model-<modelname>
-	    	│   model_params.json
-		│   condition_key.json
-		│   task_contrasts.json
-		|   design_level<N>_custom.stub (optional)
-	    	│
-		└───sub-<subid>
-		    │
-		    │
-		    └───ses-<sesname>
-			│
-		        └───task-<taskname>_run-<runname>
-			    │
-			    └───onsets
-			        │   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-00<N> (can be .txt or .tsv file) 
-			        |   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-confounds (can be .txt or .tsv file) 
-			        │
-	
+        │
+        └───model-<modelname>
+            │   model_params.json
+        │   condition_key.json
+        │   task_contrasts.json
+        │   interaction_key.json (for ppi)
+        │   convolve_condition_key.json (for ppi)
+        |   design_level<N>_custom.stub (optional)
+            │
+        └───sub-<subid>
+            │
+            │
+            └───ses-<sesname>
+            │
+                └───task-<taskname>_run-<runname>
+                │
+                └───onsets
+                    │   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-00<N> (can be .txt or .tsv file) 
+                    |   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-confounds (can be .txt or .tsv file) 
+                    │
+    
 ```
 
 ## Explanations of abbreviations:
