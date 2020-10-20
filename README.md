@@ -145,18 +145,17 @@ basedir
             │   interaction_key.json (for ppi)
             │   convolve_condition_key.json (for ppi)
             |   design_level<N>_custom.stub (optional)
-            │
+            |
             └───sub-<subid>
                 │
-                │
                 └───ses-<sesname>
-                │
-                └───task-<taskname>_run-<runname>
-                │
-                └───onsets
-                    │   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-00<N> (can be .txt or .tsv file) 
-                    |   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-confounds (can be .txt or .tsv file) 
-                    │
+                        │
+                        └───task-<taskname>_run-<runname>
+                        │
+                        └───onsets
+                            │   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-00<N> (can be .txt or .tsv file) 
+                            |   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-confounds (can be .txt or .tsv file) 
+                            │
     
 ```
 
