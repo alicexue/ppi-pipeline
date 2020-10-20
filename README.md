@@ -151,12 +151,12 @@ basedir
                 │
                 └───ses-<sesname>
                 │
-                    └───task-<taskname>_run-<runname>
+                └───task-<taskname>_run-<runname>
+                │
+                └───onsets
+                    │   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-00<N> (can be .txt or .tsv file) 
+                    |   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-confounds (can be .txt or .tsv file) 
                     │
-                    └───onsets
-                        │   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-00<N> (can be .txt or .tsv file) 
-                        |   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-confounds (can be .txt or .tsv file) 
-                        │
     
 ```
 
