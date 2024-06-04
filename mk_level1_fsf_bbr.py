@@ -91,7 +91,7 @@ def parse_command_line(argv):
 
 def main(argv=None):
     args=parse_command_line(argv)
-    print args
+    print(args)
       
     mk_level1_fsf_bbr(args)
 
@@ -115,7 +115,7 @@ def mk_level1_fsf_bbr(a):
     if a.sesname!="":
         fmriprep_subdir=os.path.join(fmriprep_subdir,'ses-%s'%(a.sesname))
     if not os.path.exists(fmriprep_subdir):
-        print "ERROR: No fmriprep folder found for this subject. Checked %s"%(fmriprep_subdir)
+        print("ERROR: No fmriprep folder found for this subject. Checked %s"%(fmriprep_subdir))
         sys.exit(-1)
     model_subdir='%s/model/level1/model-%s/%s'%(os.path.join(a.basedir,a.studyid),a.modelname,subid)
     if a.sesname!="":
@@ -162,20 +162,20 @@ def mk_level1_fsf_bbr(a):
         initial_highres_file = anat_preproc_files[0]
     elif len(anat_preproc_files) == 0:
         if a.sesname=="":
-            print "ERROR: Could not find preprocessed anat file in %s. Make sure this directory points to the output of fmriprep."%(anatdir)
-            print "\tNOTE: Looked for 'T1w', 'space', 'preproc' in file name."
+            print("ERROR: Could not find preprocessed anat file in %s. Make sure this directory points to the output of fmriprep."%(anatdir))
+            print("\tNOTE: Looked for 'T1w', 'space', 'preproc' in file name.")
         else:
-            print "ERROR: Could not find preprocessed anat file in %s or %s. Make sure this directory points to the output of fmriprep."%(anatdir,sesanatdir)
-            print "\tNOTE: Looked for 'T1w', 'space', 'preproc' in file name."
+            print("ERROR: Could not find preprocessed anat file in %s or %s. Make sure this directory points to the output of fmriprep."%(anatdir,sesanatdir))
+            print("\tNOTE: Looked for 'T1w', 'space', 'preproc' in file name.")
         sys.exit(-1)
     else:
-        print fmriprep_subdir+'/'+anathead+a.spacetag+anattail
+        print(fmriprep_subdir+'/'+anathead+a.spacetag+anattail)
         if a.spacetag!='' and os.path.exists(fmriprep_subdir+'/anat/'+anathead+a.spacetag+anattail):
             initial_highres_file = anathead+a.spacetag+anattail
         else:
-            print "ERROR: Found multiple preprocessed anat files. Please make sure the directory is structured correctly."
-            print "Files found:", anat_preproc_files
-            print "If the files listed above are in the same directory, specify the space tag you want to use in the arguments."
+            print("ERROR: Found multiple preprocessed anat files. Please make sure the directory is structured correctly.")
+            print("Files found:", anat_preproc_files)
+            print("If the files listed above are in the same directory, specify the space tag you want to use in the arguments.")
             sys.exit(-1)
 
     # Get func preprocessed data from fmriprep
@@ -195,34 +195,34 @@ def mk_level1_fsf_bbr(a):
                 i=fname.find('_brainmask.nii.gz')
                 fslmaths_preproc_brainmask=fname[:i]+'_preproc_brain.nii.gz'
             # for post fmriprep 1.4.0
-	    elif fname.startswith(funchead) and fname.endswith('-brain_mask.nii.gz'):
-	        fmriprep_brainmask=fname
-		i=fname.find('-brain_mask.nii.gz')
-		fslmaths_preproc_brainmask=fname[:i]+'-preproc_brain.nii.gz'
+        elif fname.startswith(funchead) and fname.endswith('-brain_mask.nii.gz'):
+            fmriprep_brainmask=fname
+        i=fname.find('-brain_mask.nii.gz')
+        fslmaths_preproc_brainmask=fname[:i]+'-preproc_brain.nii.gz'
      # find initial_high_res_file in func_preproc_files found above
     if len(func_preproc_files) == 1:
         func_preproc_file = func_preproc_files[0]
     elif len(func_preproc_files) == 0:
-        print "ERROR: Could not find preprocessed functional file in %s. Make sure this directory points to the output of fmriprep."%(funcdir)
-        print "\tNOTE: Looked for 'preproc' and 'bold' in the file name. (Excluded files with 'brain' in file name)."
+        print("ERROR: Could not find preprocessed functional file in %s. Make sure this directory points to the output of fmriprep."%(funcdir))
+        print("\tNOTE: Looked for 'preproc' and 'bold' in the file name. (Excluded files with 'brain' in file name).")
         sys.exit(-1)
     else:
         if a.spacetag!='' and os.path.exists(fmriprep_subdir+'/func/'+funchead+a.spacetag+functail):
             func_preproc_file = funchead+a.spacetag+functail
         else:
-            print "ERROR: Found multiple preprocessed func files here: %s. Please specify the label in the arguments."%(funcdir)
-            print func_preproc_files
+            print("ERROR: Found multiple preprocessed func files here: %s. Please specify the label in the arguments."%(funcdir))
+            print(func_preproc_files)
             sys.exit(-1)
     if a.usebrainmask and fslmaths_preproc_brainmask=="":
-        print "ERROR: usebrainmask is true, but brain mask was not found in %s"%(funcdir)
+        print("ERROR: usebrainmask is true, but brain mask was not found in %s"%(funcdir))
         sys.exit(-1)
 
     if "MNI152NLin2009cAsym" not in func_preproc_file and not a.doreg:
-        print "\nWARNING: It appears that your preprocessed functional file %s is not in MNI152NLin2009cAsym space. You may want to do registration."%(func_preproc_file)
+        print("\nWARNING: It appears that your preprocessed functional file %s is not in MNI152NLin2009cAsym space. You may want to do registration."%(func_preproc_file))
 
 
     # not tested yet
-    print 'PROCESSING:',fmriprep_subdir
+    print('PROCESSING:',fmriprep_subdir)
     anatimg=a.anatimg
     if anatimg=='':
         anatimg=os.path.join(fmriprep_subdir,'anatomy/highres001_brain')
@@ -243,7 +243,7 @@ def mk_level1_fsf_bbr(a):
             for key,value in conddict.items():
                 conddict_keys.append(key)
         else:
-            print "ERROR: Task name %s was not found in condition_key.json. Make sure the JSON file is formatted correctly"%(a.taskname)
+            print("ERROR: Task name %s was not found in condition_key.json. Make sure the JSON file is formatted correctly"%(a.taskname))
             sys.exit(-1)
         ev_keys = conddict_keys
         ev_files=[]
@@ -252,14 +252,14 @@ def mk_level1_fsf_bbr(a):
         for ev in ev_keys:
             ev_files.append('%s_task-%s_run-%s_ev-%03d'%(subid_ses,a.taskname,a.runname,int(ev)))
             conditions.append(conddict[ev])  
-        print "found conditions:",conditions
+        print("found conditions:",conditions)
     elif os.path.exists(cond_key_txt):
         cond_key=load_condkey(cond_key_txt)
 
         conditions=cond_key[a.taskname].values()
-        print 'found conditions:',conditions
+        print('found conditions:',conditions)
     else:
-        print "ERROR: Could not find condition key in %s"%(os.path.join(a.basedir,a.studyid,'model/level1/model-%s'%a.modelname))
+        print("ERROR: Could not find condition key in %s"%(os.path.join(a.basedir,a.studyid,'model/level1/model-%s'%a.modelname)))
         sys.exit(-1)
 
     # read in convolution settings for each ev
@@ -279,10 +279,10 @@ def mk_level1_fsf_bbr(a):
                 assert int(setting_value) in range(0,7) # convolution setting must be int in between 0 and 6
                 conv_settings.append(setting_value)
         else:
-            print "ERROR: Task name %s was not found in convole_condition_key.json. Make sure the JSON file is formatted correctly"%(a.taskname)
+            print("ERROR: Task name %s was not found in convole_condition_key.json. Make sure the JSON file is formatted correctly"%(a.taskname))
             sys.exit(-1)
     else:
-        print "ERROR: Could not find convole_conditions_key.json in %s"%(os.path.join(a.basedir,a.studyid,'model/level1/model-%s'%a.modelname))
+        print("ERROR: Could not find convole_conditions_key.json in %s"%(os.path.join(a.basedir,a.studyid,'model/level1/model-%s'%a.modelname)))
         sys.exit(-1)
 
     # read in interaction details
@@ -296,10 +296,10 @@ def mk_level1_fsf_bbr(a):
                 # and the names of the conditions are the values
             itrcdict = itrcdict[a.taskname]
         else:
-            print "ERROR: Task name %s was not found in interaction_key.json. Make sure the JSON file is formatted correctly"%(a.taskname)
+            print("ERROR: Task name %s was not found in interaction_key.json. Make sure the JSON file is formatted correctly"%(a.taskname))
             sys.exit(-1)
     else:
-        print "ERROR: Could not find interaction_key.json in %s"%(os.path.join(a.basedir,a.studyid,'model/level1/model-%s'%a.modelname))
+        print("ERROR: Could not find interaction_key.json in %s"%(os.path.join(a.basedir,a.studyid,'model/level1/model-%s'%a.modelname)))
         sys.exit(-1)
 
 
@@ -316,7 +316,7 @@ def mk_level1_fsf_bbr(a):
                 orth[int(l.split()[1])]=int(l.split()[2])
         f.close()
     else:
-        print 'no orthogonalization found'
+        print('no orthogonalization found')
         
     # not tested yet
     # check for QA dir
@@ -325,7 +325,7 @@ def mk_level1_fsf_bbr(a):
 
 
     # Get task contrasts
-    print 'loading contrasts'
+    print('loading contrasts')
     # if it's a json file
     contrastsfile_json=os.path.join(a.basedir,a.studyid,'model/level1/model-%s/task_contrasts.json'%a.modelname)
     # if it's a txt file
@@ -338,15 +338,15 @@ def mk_level1_fsf_bbr(a):
     elif os.path.exists(contrastsfile_txt):
         contrasts_all=load_contrasts(contrastsfile)
     else:
-        print "WARNING: Could not find task_contrasts file in %s"%(os.path.join(a.basedir,a.studyid,'model/level1/model-%s'%a.modelname))
+        print("WARNING: Could not find task_contrasts file in %s"%(os.path.join(a.basedir,a.studyid,'model/level1/model-%s'%a.modelname)))
         contrasts_all={}
-    print 'added contrasts:',contrasts_all
+    print('added contrasts:',contrasts_all)
 
     contrasts=[]
     if contrasts_all.has_key(a.taskname):
         contrasts=contrasts_all[a.taskname]
     elif os.path.exists(contrastsfile_json) or os.path.exists(contrastsfile_txt):
-        print "ERROR: Could not find task name %s in contrasts. Make sure the file is formatted correctly."
+        print("ERROR: Could not find task name %s in contrasts. Make sure the file is formatted correctly.")
         sys.exit(-1)
 
     # Find Repetition Time - from header of preprocessed func file
@@ -365,7 +365,7 @@ def mk_level1_fsf_bbr(a):
     # in customsettings, key is the setting ('fmri(mc)' for example) and the value of the setting is the value
     customsettings={}
     if os.path.exists(customstubfilename):
-        print 'Found custom fsf stub'
+        print('Found custom fsf stub')
         customstubfile=open(customstubfilename,'r')
         for l in customstubfile:
             llist=l.split(' ')
@@ -531,7 +531,7 @@ def mk_level1_fsf_bbr(a):
                         elif itrcdict[conditions[ev]]["make_zero"][mkz_index] == "mean":
                             outfile.write('set fmri(interactionsd%d.%d) 2\n'%(ev+1,ev_int+1))
                         else:
-                            print 'ERROR: "make_zero" values in condition key must be "min", "centre", or "mean. Make sure the file is formatted correctly.'
+                            print('ERROR: "make_zero" values in condition key must be "min", "centre", or "mean. Make sure the file is formatted correctly.')
                             outfile.close()
                             sys.exit(-1)
                     else:
@@ -540,7 +540,7 @@ def mk_level1_fsf_bbr(a):
         # if the EV file is missing
         else:
              outfile.write('set fmri(shape%d) 10\n'%(ev+1))
-             print '%s is missing, using empty EV'%condfile
+             print('%s is missing, using empty EV'%condfile)
              empty_evs.append(ev+1)
         
         outfile.write('set fmri(convolve%d) %d\n'%(ev+1,int(conv_settings[ev])))
@@ -610,7 +610,7 @@ def mk_level1_fsf_bbr(a):
 
     # add custom contrasts
     if len(contrasts)>0:
-        print contrasts
+        print(contrasts)
         contrastctr=ev+3;
         for c in contrasts.iterkeys():
             
@@ -650,7 +650,7 @@ def mk_level1_fsf_bbr(a):
         outfile.write('set fmri(confoundevs) 1\n')
         outfile.write('set confoundev_files(1) "%s"\n'%confoundfile)
     else:
-        print "No confounds file found"
+        print("No confounds file found")
         outfile.write('set fmri(confoundevs) 0\n')
         
     outfile.close()
@@ -658,10 +658,10 @@ def mk_level1_fsf_bbr(a):
     if a.callfeat:
         if a.usebrainmask:
             fslmathsargs = ["fslmaths",os.path.join(funcdir,func_preproc_file),"-mas",os.path.join(funcdir,fmriprep_brainmask),os.path.join(funcdir,fslmaths_preproc_brainmask)]
-            print "Applying fslmath's mas, creating the following file: %s"%(fslmaths_preproc_brainmask)
+            print("Applying fslmath's mas, creating the following file: %s"%(fslmaths_preproc_brainmask))
             sub.call(fslmathsargs)
         featargs = ["feat",outfilename]
-        print "Calling", ' '.join(featargs)
+        print("Calling", ' '.join(featargs))
         sub.call(featargs)
 
     return outfilename
