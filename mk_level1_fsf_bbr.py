@@ -518,28 +518,17 @@ def mk_level1_fsf_bbr(a):
                     if ev_int == ev:
                         continue
                     outfile.write('# Interactions (EV %d with EV %d)\n'%(ev+1,ev_int+1))
-                    if ev_int+1 in itrcdict[conditions[ev]]["btwn_evs"]:
+                    if ev_int+1 in itrcdict[conditions[ev]]:
                         outfile.write('set fmri(interactions%d.%d) 1\n'%(ev+1,ev_int+1))
                         outfile.write('# Demean before using in interactions (EV %d with EV %d)\n'%(ev+1,ev_int+1))
-                        if ev_int+1 in itrcdict[conditions[ev]]["btwn_evs"]:
-                            mkz_index = itrcdict[conditions[ev]]["btwn_evs"].index(ev_int+1)
-                            if itrcdict[conditions[ev]]["make_zero"][mkz_index] == "min":
-                                outfile.write('set fmri(interactionsd%d.%d) 0\n'%(ev+1,ev_int+1))
-                            elif itrcdict[conditions[ev]]["make_zero"][mkz_index] == "centre":
-                                outfile.write('set fmri(interactionsd%d.%d) 1\n'%(ev+1,ev_int+1))
-                            elif itrcdict[conditions[ev]]["make_zero"][mkz_index] == "mean":
+                        if ev_int+1 in itrcdict[conditions[ev]]:
+                            if conditions[ev_int].startswith("*phys*_"): # for phys EV, should use mean
                                 outfile.write('set fmri(interactionsd%d.%d) 2\n'%(ev+1,ev_int+1))
-                            else:
-                                print('ERROR: "make_zero" values in condition key must be "min", "centre", or "mean. Make sure the file is formatted correctly.')
-                                outfile.close()
-                                sys.exit(-1)
-                        else:
-                            outfile.write('set fmri(interactionsd%d.%d) 0\n'%(ev+1,ev_int+1))
+                            else: # for psy EV, should use centre
+                                outfile.write('set fmri(interactionsd%d.%d) 1\n'%(ev+1,ev_int+1))
                     else:
                        outfile.write('set fmri(interactions%d.%d) 0\n'%(ev+1,ev_int+1))
                        outfile.write('set fmri(interactionsd%d.%d) 0\n'%(ev+1,ev_int+1))
-                    
-                    
                         
         # if the EV file is missing
         else:
