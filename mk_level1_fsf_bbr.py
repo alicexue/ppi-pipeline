@@ -519,7 +519,8 @@ def mk_level1_fsf_bbr(a):
                     print("ERROR: Number of EVs in %s in interaction_key.json should be 2." % conditions[ev])
                     outfile.close()
                     sys.exit(-1)
-                if conditions[itrcdict[conditions[ev]][0]+1] != "*phys*_" and conditions[itrcdict[conditions[ev]][1]+1] != "*phys*_":
+
+                if not conddict[itrcdict[conditions[ev]][0]].startswith("*phys*_") and not conddict[itrcdict[conditions[ev]][1]].startswith("*phys*_"):
                     print("ERROR: A physiological regressor was not specified in %s in interaction_key.json." % conditions[ev])
                     outfile.close()
                     sys.exit(-1)
@@ -528,10 +529,11 @@ def mk_level1_fsf_bbr(a):
                     if ev_int == ev:
                         continue
                     outfile.write('# Interactions (EV %d with EV %d)\n'%(ev+1,ev_int+1))
-                    if ev_int+1 in itrcdict[conditions[ev]]:
+                    if str(ev_int+1) in itrcdict[conditions[ev]]:
                         outfile.write('set fmri(interactions%d.%d) 1\n'%(ev+1,ev_int+1))
                         outfile.write('# Demean before using in interactions (EV %d with EV %d)\n'%(ev+1,ev_int+1))
-                        if ev_int+1 in itrcdict[conditions[ev]]:
+                        
+                        if str(ev_int+1) in itrcdict[conditions[ev]]:
                             if conditions[ev_int].startswith("*phys*_"): # for phys EV, should use mean
                                 outfile.write('set fmri(interactionsd%d.%d) 2\n'%(ev+1,ev_int+1))
                             else: # for psy EV, should use centre
