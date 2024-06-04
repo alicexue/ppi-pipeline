@@ -543,12 +543,19 @@ def mk_level1_fsf_bbr(a):
              print('%s is missing, using empty EV'%condfile)
              empty_evs.append(ev+1)
         
-        outfile.write('set fmri(convolve%d) %d\n'%(ev+1,int(conv_settings[ev])))
-        outfile.write('set fmri(convolve_phase%d) 0\n'%(ev+1))
-        outfile.write('set fmri(tempfilt_yn%d) 0\n'%(ev+1))
-        outfile.write('set fmri(deriv_yn%d) 0\n'%(ev+1))
-        #outfile.write('set fmri(tempfilt_yn%d) 1\n'%(ev+1))
-        #outfile.write('set fmri(deriv_yn%d) 1\n'%(ev+1))
+
+        if conditions[ev].startswith('*phys*_') or conditions[ev].startswith('*interaction*_'):
+            outfile.write('set fmri(tempfilt_yn%d) 0\n'%(ev+1))
+            outfile.write('set fmri(deriv_yn%d) 0\n'%(ev+1))
+            if int(conv_settings[ev]) != 0:
+                print("WARNING: Convolution setting for %s was not set to None in convolve_condition_key.json; ignoring this and not convolving.\n" % (conditions[ev]))
+            outfile.write('set fmri(convolve%d) 0\n'%(ev+1))
+            outfile.write('set fmri(convolve_phase%d) 0\n'%(ev+1))
+        else:
+            outfile.write('set fmri(tempfilt_yn%d) 1\n'%(ev+1))
+            outfile.write('set fmri(deriv_yn%d) 1\n'%(ev+1))
+            outfile.write('set fmri(convolve%d) %d\n'%(ev+1,int(conv_settings[ev])))
+            outfile.write('set fmri(convolve_phase%d) 0\n'%(ev+1))
 
         # first write the orth flag for zero, which seems to be turned on whenever
         # anything is orthogonalized
