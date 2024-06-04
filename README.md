@@ -64,8 +64,8 @@
     - Example interaction_key.json:  
         ```
         {"distance":
-            {"*interaction*_ppi_abs":["1", "3"]},
-            {"*interaction*_ppi_rep":["2", "3"]}
+            {"*interaction*_ppi_abs":["1", "3"],
+             "*interaction*_ppi_rep":["2", "3"]}
         }
         ```
     Here, "distance" is the task name.   
