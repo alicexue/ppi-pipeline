@@ -76,7 +76,7 @@
     
     Note that `*interaction*_` precedes each interaction name.  
 
-4. Add convolve_condition_key.json to indicate the type of convolution to use for each EV. It should be located in the same directory as condition_key.json. The pipeline will automatically make sure that the physiological regressor is not convolved; if the setting is this json is not None, only a warning will be printed (no error will be thrown).
+4. Add convolve_condition_key.json to indicate the type of convolution to use for each EV. It should be located in the same directory as condition_key.json. The pipeline will automatically make sure that the physiological regressor is not convolved; if the settings in this json for the physiological regressor and interaction do not correspond to None, a warning will be printed (no error will be thrown).
     - Example convolve_condition_key.json:  
     ```
     {"distance":
