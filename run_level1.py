@@ -89,6 +89,8 @@ def main(argv=None):
     print('Make sure that the following have been set:')
     print('\t%s/model_params.json' % modeldir)
     print('\t%s/condition_key.json' % modeldir)
+    print('\t%s/interaction_key.json' % modeldir)
+    print('\t%s/convolve_condition_key.json' % modeldir)
     print('\t%s/task_contrasts.json (optional but must be removed if not using)' % modeldir)
     print('\t%s/confounds.json (optional but must be removed if not using)' % modeldir)
     print('\t%s/design_level1_custom.stub (optional)' % modeldir)
