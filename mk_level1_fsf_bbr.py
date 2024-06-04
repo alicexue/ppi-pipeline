@@ -476,6 +476,10 @@ def mk_level1_fsf_bbr(a):
             parts = conditions[ev].split('*interaction*_')
             name = parts[-1] # remove '*interaction*_' from EV name
             outfile.write('\n\nset fmri(evtitle%d) "%s"\n'%(ev+1,name))
+        elif conditions[ev].startswith('*phys*_'):
+            parts = conditions[ev].split('*phys*_')
+            name = parts[-1] # remove '*phys*_' from EV name
+            outfile.write('\n\nset fmri(evtitle%d) "%s"\n'%(ev+1,name))
         else:
             outfile.write('\n\nset fmri(evtitle%d) "%s"\n'%(ev+1,conditions[ev]))
 
@@ -490,7 +494,7 @@ def mk_level1_fsf_bbr(a):
         else:
             condfile='%s/onsets/%s_task-%s_run-%s_ev-%03d.txt'%(model_subdir,subid_ses,a.taskname,a.runname,ev+1)
         # if the EV file exists
-        if os.path.exists(condfile):
+        if os.path.exists(condfile) or conditions[ev].startswith('*interaction*_'):
             outfile.write('# Basic waveform shape\n')
             outfile.write('# 0 : Square\n')
             outfile.write('# 1 : Sinusoid\n')
@@ -500,7 +504,10 @@ def mk_level1_fsf_bbr(a):
             outfile.write('# 10 : Empty (all zeros)\n')
     
             shape = 3
-            if conditions[ev].startswith('*interaction*_'):
+            #Celia added code to write shape of phys EV as 1 column format
+            if conditions[ev].startswith('*phys*_'):
+                shape = 2
+            elif conditions[ev].startswith('*interaction*_'):
                 shape = 4
             outfile.write('set fmri(shape%d) %d\n'%(ev+1,shape))
             if not conditions[ev].startswith('*interaction*_'):
@@ -508,23 +515,27 @@ def mk_level1_fsf_bbr(a):
             
             if conditions[ev].startswith('*interaction*_'): # if user indicates this is an interaction
                 for ev_int in range(ev):
-                    outfile.write('# Interactions (EV %d with EV %d\n'%(ev+1,ev_int+1))
+                    outfile.write('# Interactions (EV %d with EV %d)\n'%(ev+1,ev_int+1))
                     if ev_int+1 in itrcdict[conditions[ev]]["btwn_evs"]:
                         outfile.write('set fmri(interactions%d.%d) 1\n'%(ev+1,ev_int+1))
                     else:
                        outfile.write('set fmri(interactions%d.%d) 0\n'%(ev+1,ev_int+1))
                     
                     outfile.write('# Demean before using in interactions (EV %d with EV %d)\n'%(ev+1,ev_int+1))
-                    if itrcdict[conditions[ev]]["make_zero"][ev_int] == "min":
-                        outfile.write('set fmri(interactions%d.%d) 0\n'%(ev+1,ev_int+1))
-                    elif itrcdict[conditions[ev]]["make_zero"][ev_int] == "centre":
-                        outfile.write('set fmri(interactions%d.%d) 1\n'%(ev+1,ev_int+1))
-                    elif itrcdict[conditions[ev]]["make_zero"][ev_int] == "mean":
-                        outfile.write('set fmri(interactions%d.%d) 2\n'%(ev+1,ev_int+1))
+                    if ev_int+1 in itrcdict[conditions[ev]]["btwn_evs"]:
+                        mkz_index = itrcdict[conditions[ev]]["btwn_evs"].index(ev_int+1)
+                        if itrcdict[conditions[ev]]["make_zero"][mkz_index] == "min":
+                            outfile.write('set fmri(interactionsd%d.%d) 0\n'%(ev+1,ev_int+1))
+                        elif itrcdict[conditions[ev]]["make_zero"][mkz_index] == "centre":
+                            outfile.write('set fmri(interactionsd%d.%d) 1\n'%(ev+1,ev_int+1))
+                        elif itrcdict[conditions[ev]]["make_zero"][mkz_index] == "mean":
+                            outfile.write('set fmri(interactionsd%d.%d) 2\n'%(ev+1,ev_int+1))
+                        else:
+                            print 'ERROR: "make_zero" values in condition key must be "min", "centre", or "mean. Make sure the file is formatted correctly.'
+                            outfile.close()
+                            sys.exit(-1)
                     else:
-                        print 'ERROR: "make_zero" values in condition key must be "min", "centre", or "mean. Make sure the file is formatted correctly.'
-                        outfile.close()
-                        sys.exit(-1)
+                        outfile.write('set fmri(interactionsd%d.%d) 0\n'%(ev+1,ev_int+1))
                         
         # if the EV file is missing
         else:
@@ -534,8 +545,10 @@ def mk_level1_fsf_bbr(a):
         
         outfile.write('set fmri(convolve%d) %d\n'%(ev+1,int(conv_settings[ev])))
         outfile.write('set fmri(convolve_phase%d) 0\n'%(ev+1))
-        outfile.write('set fmri(tempfilt_yn%d) 1\n'%(ev+1))
-        outfile.write('set fmri(deriv_yn%d) 1\n'%(ev+1))
+        outfile.write('set fmri(tempfilt_yn%d) 0\n'%(ev+1))
+        outfile.write('set fmri(deriv_yn%d) 0\n'%(ev+1))
+        #outfile.write('set fmri(tempfilt_yn%d) 1\n'%(ev+1))
+        #outfile.write('set fmri(deriv_yn%d) 1\n'%(ev+1))
 
         # first write the orth flag for zero, which seems to be turned on whenever
         # anything is orthogonalized
@@ -559,6 +572,11 @@ def mk_level1_fsf_bbr(a):
         if conditions[ev].startswith('*interaction*_'):
             parts = conditions[ev].split('*interaction*_')
             name = parts[-1] # remove '*interaction*_' from EV name
+            outfile.write('set fmri(conname_real.%d) "%s"\n'%(ev+1,name))
+            outfile.write('set fmri(conname_orig.%d) "%s"\n'%(ev+1,name))
+        elif conditions[ev].startswith('*phys*_'):
+            parts = conditions[ev].split('*phys*_')
+            name = parts[-1] # remove '*phys*_' from EV name
             outfile.write('set fmri(conname_real.%d) "%s"\n'%(ev+1,name))
             outfile.write('set fmri(conname_orig.%d) "%s"\n'%(ev+1,name))
         else:
@@ -597,8 +615,14 @@ def mk_level1_fsf_bbr(a):
         for c in contrasts.iterkeys():
             
             outfile.write('set fmri(conpic_real.%d) 1\n'%contrastctr)
-            outfile.write('set fmri(conname_real.%d) "%s"\n'%(contrastctr,c))
-            outfile.write('set fmri(conname_orig.%d) "%s"\n'%(contrastctr,c))
+            if c.startswith('*interaction*_'):
+                parts = c.split('*interaction*_')
+                name = parts[-1] # remove '*interaction*_' from EV name
+                outfile.write('set fmri(conname_real.%d) "%s"\n'%(contrastctr,name))
+                outfile.write('set fmri(conname_orig.%d) "%s"\n'%(contrastctr,name))
+            else:
+                outfile.write('set fmri(conname_real.%d) "%s"\n'%(contrastctr,c))
+                outfile.write('set fmri(conname_orig.%d) "%s"\n'%(contrastctr,c))
             cveclen=len(contrasts[c])
             con_real_ctr=1
             for evt in range(nevs):
