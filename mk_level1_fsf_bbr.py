@@ -399,9 +399,10 @@ def mk_level1_fsf_bbr(a):
             outfile.write(l)
 
     # figure out how many timepoints there are 
-    p = sub.Popen(['fslinfo','%s/func/%s'%(fmriprep_subdir,func_preproc_file)],stdout=sub.PIPE,stderr=sub.PIPE)
+    p = sub.Popen(['fslinfo', '%s/func/%s'%(fmriprep_subdir,func_preproc_file)], stdout=sub.PIPE, stderr=sub.PIPE,
+                  encoding='utf8')
     output, errors = p.communicate()
-
+    
     ntp=int(output.split('\n')[4].split()[1])
 
     #img=nibabel.load('%s/BOLD/task%03d_run%03d/bold_mcf_brain.nii.gz'%(fmriprep_subdir,tasknum,a.runname))
