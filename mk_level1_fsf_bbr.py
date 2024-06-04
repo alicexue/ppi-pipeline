@@ -343,14 +343,14 @@ def mk_level1_fsf_bbr(a):
     print('added contrasts:',contrasts_all)
 
     contrasts=[]
-    if contrasts_all.has_key(a.taskname):
+    if a.taskname in contrasts_all:
         contrasts=contrasts_all[a.taskname]
     elif os.path.exists(contrastsfile_json) or os.path.exists(contrastsfile_txt):
         print("ERROR: Could not find task name %s in contrasts. Make sure the file is formatted correctly.")
         sys.exit(-1)
 
     # Find Repetition Time - from header of preprocessed func file
-    tr=nifti_utils.get_TR('%s/func/%s'%(fmriprep_subdir,func_preproc_file))
+    tr=nifti_utils.get_tr('%s/func/%s'%(fmriprep_subdir,func_preproc_file))
     
     # Get fsf template with default values
     stubfilename=os.path.join(_thisDir,'design_level1_fsl5.stub')
@@ -563,13 +563,13 @@ def mk_level1_fsf_bbr(a):
         # first write the orth flag for zero, which seems to be turned on whenever
         # anything is orthogonalized
         
-        if orth.has_key(ev+1):
+        if ev+1 in orth:
                 outfile.write('set fmri(ortho%d.0) 1\n'%int(ev+1))
         else:
                 outfile.write('set fmri(ortho%d.0) 0\n'%int(ev+1))
         
         for evn in range(1,nevs+1):
-            if orth.has_key(ev+1):
+            if ev+1 in orth:
                 if orth[ev+1]==evn:
                     outfile.write('set fmri(ortho%d.%d) 1\n'%(ev+1,evn))
                 else:
