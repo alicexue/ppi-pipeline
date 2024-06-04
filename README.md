@@ -1,6 +1,6 @@
 # ppi-pipeline* 
 \* this is a copy of [fmri-pipeline](https://github.com/alicexue/fmri-pipeline) with added functionality to run PPI analyses  
-\* has yet to be thoroughly tested
+\* currently being tested!
 
 ## Overview:
 - manage_flywheel_downloads.py can download fmriprep outputs (including freesurfer outputs + html/svg reports) and can export raw BIDS from Flywheel
@@ -31,7 +31,7 @@
 1. Run manage_flywheel_downloads.py, which will ask for the necessary information via the command line
 2. Run rm_fmriprep_ses_directories.py if Flywheel adds unwanted session directories to fmriprep outputs
 
-#### For running fmri analyses:
+#### To run fmri analyses:
 1. Run setup.py to create the model directory and all necessary sub-directories. This will also create empty/sample *.json files (model_params.json, condition_key.json, task_contrasts.json) and onset directories for the EV files. 
 2. Fill out model_params.json under model00\<N>, see abbreviation explanations below.
 3. Fill out condition_key.json under model00\<N>, where the task name is the key and the value is a json object with EV names as keys and the conditions as values. (Note: The EV files, *_ev-00\<N>, are always padded with leading zeros so that there are 3 digits)
@@ -42,15 +42,16 @@
 8. Level 2 and level 3 are run similarly. Use the -h option to see explanations of the parameters
 
 
-:bangbang::bangbang::bangbang: **The following section is unique to ppi-pipeline.* 
-#### For running ppi analyses:
-1. To indicate which EV in conditions.json is for the interaction, the EV name in conditions.json must be preceded by `*interaction*_`. This will make sure the appropriate waveform shape is used.
+:bangbang: **The following section is unique to ppi-pipeline.* :bangbang:
+#### To run PPI analyses:
+1. Create the EV files, which belong in the 'onsets' directories in each run folder. Make sure the EV files are named correctly (see the diagram below). Confound files should be saved in the same location as the EV files (the file name ends in *_ev-confounds, see below). (Note that the confounds files can be generated automatically, as mentioned in Step 1 under "To run fmri analyses") Task regressor EVs should be in the 3-column format (see the [FSL documentation](https://fsl.fmrib.ox.ac.uk/fsl/docs/#/task_fmri/feat/user_guide?id=evs)); the physiological regressor EV should be in the 1-entry-per-volume format.
+2. Add conditions.json to provide names for each EV. Keys are task names and values are dictionaries, wherein the keys are the EV numbers (formatted as strings) and the value is the name of the EV. Here, the desired name of the physiological regressor should be preceded by `*phys*_`. The desired name of the interaction EV should be preceded by `*interaction*_`. This will make sure the appropriate waveform shapes are used.
     - Example conditions.json:  
         ```
         {"distance":
             {"1":"abs",
             "2":"rep",
-            "3":"phys-hpc",
+            "3":"*phys*_hpc",
             "4":"*interaction*_ppi_abs",
             "5":"*interaction*_ppi_rep",
             "6":"rt",
@@ -59,7 +60,7 @@
             }
         }
         ```
-2. Add interaction_key.json to indicate which EVs should be used in interactions. It should be located in the same directory as conditions.json. 
+3. Add interaction_key.json to specify the interactions. It should be located in the same directory as conditions.json. 
     - Example interaction_key.json:  
         ```
         {"distance":
@@ -87,7 +88,7 @@
     
     Note that `*interaction*_` precedes each interaction name.  
 
-3. Add convole_condition_key.json to indicate which type of convolution to use for each EV. It should be located in the same directory as conditions.json. 
+4. Add convolve_condition_key.json to indicate the type of convolution to use for each EV. It should be located in the same directory as conditions.json. The pipeline will automatically make sure that the physiological regressor is not convolved; if the setting is this json is not None, only a warning will be printed (no error will be thrown).
     - Example convolve_condition_key.json:  
     ```
     {"distance":
@@ -153,7 +154,7 @@ basedir
                         └───task-<taskname>_run-<runname>
                         │
                         └───onsets
-                            │   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-00<N> (can be .txt or .tsv file) 
+                            │   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-00<N> (can be .txt or .tsv file; can be task regressor or physiological regressor) 
                             |   sub-<subid>_ses-<sesname>_task-<taskname>_run-<runname>_ev-confounds (can be .txt or .tsv file) 
                             │
     
