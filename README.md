@@ -66,21 +66,21 @@
         {"distance":
             {"*interaction*_ppi_abs":
                 {
-                        "btwn_evs": ["1", "2", "3"],
-                        "make_zero": ["centre","min","mean"]
+                        "btwn_evs": ["1", "3"],
+                        "make_zero": ["centre","mean"]
                 }
             },
             {"*interaction*_ppi_rep":
                 {
-                        "btwn_evs": ["1", "2", "3", "4"],
-                        "make_zero": ["min","centre","mean","min"]
+                        "btwn_evs": ["2", "3"],
+                        "make_zero": ["centre","mean"]
                 }
             }
         }
         ```
     Here, "distance" is the task name.   
     
-    "ppi_abs" is the name of the first interaction (EV4) between EV1 (psy) and EV3 (phys).  The value of "make_zero" for this interaction is ["centre","min","mean"], which treats EV1 as the task time course and EV3 as the ROI time course. To ignore EV2, "min" is in the position that corresponds to EV2 in the "make_zero" array).   
+    "ppi_abs" is the name of the first interaction (EV4) between EV1 (psy) and EV3 (phys).  The value of "make_zero" for this interaction is ["centre","mean"], which treats EV1 as the task time course and EV3 as the ROI time course. (EV2 will be ignored and set to "min").   
     
     "ppi_rep" is the name of the interaction between EVs 2 and 3, so in the "make_zero" array, "centre" and "mean" are in the positions that correspond to EV2 and EV3, respectively.   
     
