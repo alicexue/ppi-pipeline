@@ -514,6 +514,16 @@ def mk_level1_fsf_bbr(a):
                 outfile.write('set fmri(custom%d) "%s"\n'%(ev+1,condfile))
             
             if conditions[ev].startswith('*interaction*_'): # if user indicates this is an interaction
+                # perform some checks first
+                if len(itrcdict[conditions[ev]]) != 2:
+                    print("ERROR: Number of EVs in %s in interaction_key.json should be 2." % conditions[ev])
+                    outfile.close()
+                    sys.exit(-1)
+                if conditions[itrcdict[conditions[ev]][0]+1] != "*phys*_" and conditions[itrcdict[conditions[ev]][1]+1] != "*phys*_":
+                    print("ERROR: A physiological regressor was not specified in %s in interaction_key.json." % conditions[ev])
+                    outfile.close()
+                    sys.exit(-1)
+
                 for ev_int in range(nevs):
                     if ev_int == ev:
                         continue
