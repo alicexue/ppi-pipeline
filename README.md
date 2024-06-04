@@ -64,25 +64,13 @@
     - Example interaction_key.json:  
         ```
         {"distance":
-            {"*interaction*_ppi_abs":
-                {
-                        "btwn_evs": ["1", "3"],
-                        "make_zero": ["centre","mean"]
-                }
-            },
-            {"*interaction*_ppi_rep":
-                {
-                        "btwn_evs": ["2", "3"],
-                        "make_zero": ["centre","mean"]
-                }
-            }
+            {"*interaction*_ppi_abs":["1", "3"]},
+            {"*interaction*_ppi_rep":["2", "3"]}
         }
         ```
     Here, "distance" is the task name.   
     
-    "ppi_abs" is the name of the first interaction (EV4) between EV1 (psy) and EV3 (phys).  The value of "make_zero" for this interaction is ["centre","mean"], which treats EV1 as the task time course and EV3 as the ROI time course. (EV2 will be ignored and set to "min").   
-    
-    "ppi_rep" is the name of the interaction between EVs 2 and 3, so in the "make_zero" array, "centre" and "mean" are in the positions that correspond to EV2 and EV3, respectively.   
+    "ppi_abs" is the name of the first interaction (EV4) between EV1 (psy) and EV3 (phys). "ppi_rep" is the name of the interaction between EVs 2 and 3. For zero-ing, the pipeline will use "centre" for the task EV and "mean" for the ROI timecourse.
     
     See [PPI how to run](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/PPIHowToRun) and [PPI zeroing](https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/PPIZeroing) for more details about these settings.   
     
