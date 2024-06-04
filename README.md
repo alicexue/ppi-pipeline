@@ -44,7 +44,7 @@
 
 :bangbang: **The following section is unique to ppi-pipeline.* :bangbang:
 #### To run PPI analyses:
-1. Create the EV files, which belong in the 'onsets' directories in each run folder. Make sure the EV files are named correctly (see the diagram below). Confound files should be saved in the same location as the EV files (the file name ends in *_ev-confounds, see below). (Note that the confounds files can be generated automatically, as mentioned in Step 1 under "To run fmri analyses") Task regressor EVs should be in the 3-column format (see the [FSL documentation](https://fsl.fmrib.ox.ac.uk/fsl/docs/#/task_fmri/feat/user_guide?id=evs)); the physiological regressor EV should be in the 1-entry-per-volume format.
+1. Create the EV files, which belong in the 'onsets' directories in each run folder. Make sure the EV files are named correctly (see the diagram below). Confound files should be saved in the same location as the EV files (the file name ends in *_ev-confounds, see below). (Note that the confounds files can be generated automatically, as mentioned in Step 1 under "To run fmri analyses".) Task regressor EVs should be in the 3-column format (see the [FSL documentation](https://fsl.fmrib.ox.ac.uk/fsl/docs/#/task_fmri/feat/user_guide?id=evs)); the physiological regressor EV should be in the 1-entry-per-volume format.
 2. Add condition_key.json to provide names for each EV. Keys are task names and values are dictionaries, wherein the keys are the EV numbers (formatted as strings) and the value is the name of the EV. Here, the desired name of the physiological regressor should be preceded by `*phys*_`. The desired name of the interaction EV should be preceded by `*interaction*_`. This will make sure the appropriate waveform shapes are used.
     - Example condition_key.json:  
         ```
@@ -76,7 +76,7 @@
     
     Note that `*interaction*_` precedes each interaction name.  
 
-4. Add convolve_condition_key.json to indicate the type of convolution to use for each EV. It should be located in the same directory as condition_key.json. The pipeline will automatically make sure that the physiological regressor is not convolved; if the setting is this json is not None, only a warning will be printed (no error will be thrown).
+4. Add convolve_condition_key.json to indicate the type of convolution to use for each EV. It should be located in the same directory as condition_key.json. The pipeline will automatically make sure that the physiological regressor is not convolved; if the settings in this json for the physiological regressor and interaction do not correspond to None, a warning will be printed (no error will be thrown).
     - Example convolve_condition_key.json:  
     ```
     {"distance":
@@ -91,7 +91,7 @@
         }
     }
     ```
-    The format here is similar to that of condition_key.json, except the value for each condition name is the convolution type. Here is a key for different options:
+    The format here is similar to that of condition_key.json, except that the value for each condition name is the convolution type. Here is a key for different options:
     |  Number |  Convolution |
     |:---|:---|
     |  0  |  None  |
