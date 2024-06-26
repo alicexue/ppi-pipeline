@@ -679,7 +679,7 @@ def mk_level1_fsf_bbr(a):
     if len(contrasts) > 0:
         print(contrasts)
         contrastctr = ev + 3
-        for c in contrasts.iterkeys():
+        for c in contrasts.keys():
 
             outfile.write('set fmri(conpic_real.%d) 1\n' % contrastctr)
             if c.startswith('*interaction*_'):
