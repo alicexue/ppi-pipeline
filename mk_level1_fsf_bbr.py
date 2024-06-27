@@ -646,9 +646,9 @@ def mk_level1_fsf_bbr(a):
             outfile.write('set fmri(conname_orig.%d) "%s"\n' % (ev + 1, conditions[ev]))
         for evt in range(nevs * 2 - n_phys_and_ppi_ev):
             if conditions[ev].startswith('*phys*_') and evt == (ev*2+1):
-                outfile.write('set fmri(con_real%d.%d) %d # phys\n' % (ev + 1, evt + 1, 1)) 
+                outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 1, evt + 1, 1)) 
             elif conditions[ev].startswith('*interaction*_') and evt in (N.multiply(phys_ev_idx, 2) + N.ones(len(phys_ev_idx))): # note, the array selection is not a typo
-                outfile.write('set fmri(con_real%d.%d) %d # ppi\n' % (ev + 1, evt + 1, 1))
+                outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 1, evt + 1, 1))
             else:
                 outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 1, evt + 1, int(evt == (ev * 2))))
             if evt == (ev * 2):
