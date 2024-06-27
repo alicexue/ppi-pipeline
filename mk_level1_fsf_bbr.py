@@ -490,23 +490,30 @@ def mk_level1_fsf_bbr(a):
     outfile.write('set fmri(tr) %0.2f\n' % tr)
     nevs = len(conditions)
     outfile.write('set fmri(evs_orig) %d\n' % nevs)
-    # the wording here makes me think that no temporal derivatives for the phys and ppi regressors
-    # results in the number of real EVs being 2*nevs - 2
-    outfile.write('set fmri(evs_real) %d\n' % (2 * nevs - 2))
+    # the wording here (https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FEAT/UserGuide) 
+    # makes me think that there are no temporal derivatives for the phys and ppi regressors
+    # 
+    # so, this results in the number of real EVs being 2*nevs - (phys regressor + # of ppi's)
+    # in other words, task EVs have two con_reals each, phys and ppi EVs only have one
+    ppi_ev_idx = []
+    phys_ev_idx = []
+
+    for ev_i in range(len(conditions)):
+        if conditions[ev_i].startswith('*interaction*_'):
+            ppi_ev_idx.append(ev_i)
+        elif conditions[ev_i].startswith('*phys*_'):
+            phys_ev_idx.append(ev_i)
+
+    n_phys_and_ppi_ev = len(ppi_ev_idx) + len(phys_ev_idx)
+    outfile.write('set fmri(evs_real) %d\n' % (2 * nevs - n_phys_and_ppi_ev))
     outfile.write('set fmri(smooth) %d\n' % a.smoothing)
     outfile.write('set fmri(ncon_orig) %d\n' % (len(conditions) + 1 + len(contrasts)))
     outfile.write('set fmri(ncon_real) %d\n' % (len(conditions) + 1 + len(contrasts)))
 
     # loop through EVs
-    convals_real = N.zeros(nevs * 2 - 2)
+    convals_real = N.zeros(nevs * 2 - n_phys_and_ppi_ev)
     convals_orig = N.zeros(nevs)
     empty_evs = []
-
-    for ev in range(len(conditions)):
-        if conditions[ev].startswith('*interaction*_'):
-            ppi_ev_n = ev
-        elif conditions[ev].startswith('*phys*_'):
-            phys_ev_n = ev
 
     # iterate through the EVs
     for ev in range(len(conditions)):
@@ -637,17 +644,17 @@ def mk_level1_fsf_bbr(a):
         else:
             outfile.write('set fmri(conname_real.%d) "%s"\n' % (ev + 1, conditions[ev]))
             outfile.write('set fmri(conname_orig.%d) "%s"\n' % (ev + 1, conditions[ev]))
-        for evt in range(nevs * 2 - 2):
+        for evt in range(nevs * 2 - n_phys_and_ppi_ev):
             if conditions[ev].startswith('*phys*_') and evt == (ev*2+1):
-                outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 1, evt + 1, 1))
-            elif conditions[ev].startswith('*interaction*_') and evt == (phys_ev_n*2+1):
-                outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 1, evt + 1, 1))
+                outfile.write('set fmri(con_real%d.%d) %d # phys\n' % (ev + 1, evt + 1, 1)) 
+            elif conditions[ev].startswith('*interaction*_') and evt in (N.multiply(phys_ev_idx, 2) + N.ones(len(phys_ev_idx))): # note, the array selection is not a typo
+                outfile.write('set fmri(con_real%d.%d) %d # ppi\n' % (ev + 1, evt + 1, 1))
             else:
                 outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 1, evt + 1, int(evt == (ev * 2))))
             if evt == (ev * 2):
                 convals_real[evt] = 1
         for evt in range(nevs):
-            if conditions[ev].startswith('*phys*_') and evt == ppi_ev_n:
+            if conditions[ev].startswith('*phys*_') and evt in ppi_ev_idx: # again, not a typo
                 outfile.write('set fmri(con_orig%d.%d) %d\n' % (ev + 1, evt + 1, 1))
             else:
                 outfile.write('set fmri(con_orig%d.%d) %d\n' % (ev + 1, evt + 1, int(evt == ev)))
@@ -667,8 +674,8 @@ def mk_level1_fsf_bbr(a):
     outfile.write('set fmri(conname_real.%d) "all"\n' % (ev + 2))
     outfile.write('set fmri(conname_orig.%d) "all"\n' % (ev + 2))
 
-    for evt in range(nevs * 2 - 2):
-        if evt == (phys_ev_n * 2 + 1):
+    for evt in range(nevs * 2 - n_phys_and_ppi_ev):
+        if evt in (N.multiply(phys_ev_idx, 2) + N.ones(len(phys_ev_idx))):
             outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 2, evt + 1, 1))
         else:
             outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 2, evt + 1, convals_real[evt]))
