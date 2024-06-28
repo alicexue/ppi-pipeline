@@ -644,15 +644,41 @@ def mk_level1_fsf_bbr(a):
         else:
             outfile.write('set fmri(conname_real.%d) "%s"\n' % (ev + 1, conditions[ev]))
             outfile.write('set fmri(conname_orig.%d) "%s"\n' % (ev + 1, conditions[ev]))
-        for evt in range(nevs * 2 - n_phys_and_ppi_ev):
-            if conditions[ev].startswith('*phys*_') and evt == (ev*2+1):
-                outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 1, evt + 1, 1)) 
-            elif conditions[ev].startswith('*interaction*_') and evt in (N.multiply(phys_ev_idx, 2) + N.ones(len(phys_ev_idx))): # note, the array selection is not a typo
-                outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 1, evt + 1, 1))
+
+        con_real_ctr = 0
+        for evt in range(nevs):
+            if not (conditions[ev].startswith('*phys*_') or conditions[ev].startswith('*interaction*_')):
+                if conditions[evt].startswith('*phys*_') or conditions[evt].startswith('*interaction*_'):
+                    outfile.write('set fmri(con_real%d.%d) 0\n' % (ev + 1, con_real_ctr + 1))
+                    if con_real_ctr == (ev * 2):
+                        convals_real[con_real_ctr] = 1
+                    con_real_ctr += 1
+                else:
+                    for _ in range(2):
+                        outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 1, con_real_ctr + 1, int(con_real_ctr == (ev * 2))))
+                        if con_real_ctr == (ev * 2):
+                            convals_real[con_real_ctr] = 1
+                        con_real_ctr += 1
             else:
-                outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 1, evt + 1, int(evt == (ev * 2))))
-            if evt == (ev * 2):
-                convals_real[evt] = 1
+                # for the phys ev, set the con_real for the interaction to 1
+                if conditions[ev].startswith('*phys*_') and (conditions[evt].startswith('*interaction*_')):
+                    outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 1, con_real_ctr + 1, 1)) 
+                    if con_real_ctr == (ev * 2):
+                        convals_real[con_real_ctr] = 1
+                    con_real_ctr += 1
+                else:
+                    if conditions[evt].startswith('*phys*_') or conditions[evt].startswith('*interaction*_'):
+                        outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 1, con_real_ctr + 1, ev == evt)) 
+                        if ev == evt:
+                            convals_real[con_real_ctr] = 1
+                        con_real_ctr += 1
+                    else:
+                        for _ in range(2):
+                            outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 1, con_real_ctr + 1, int(con_real_ctr == (ev * 2))))
+                            if con_real_ctr == (ev * 2):
+                                convals_real[con_real_ctr] = 1
+                            con_real_ctr += 1
+
         for evt in range(nevs):
             if conditions[ev].startswith('*phys*_') and evt in ppi_ev_idx: # again, not a typo
                 outfile.write('set fmri(con_orig%d.%d) %d\n' % (ev + 1, evt + 1, 1))
@@ -675,16 +701,13 @@ def mk_level1_fsf_bbr(a):
     outfile.write('set fmri(conname_orig.%d) "all"\n' % (ev + 2))
 
     for evt in range(nevs * 2 - n_phys_and_ppi_ev):
-        if evt in (N.multiply(phys_ev_idx, 2) + N.ones(len(phys_ev_idx))):
-            outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 2, evt + 1, 1))
-        else:
-            outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 2, evt + 1, convals_real[evt]))
+        outfile.write('set fmri(con_real%d.%d) %d\n' % (ev + 2, evt + 1, convals_real[evt]))
+
     for evt in range(nevs):
         outfile.write('set fmri(con_orig%d.%d) %d\n' % (ev + 2, evt + 1, convals_orig[evt]))
 
     # add custom contrasts
     if len(contrasts) > 0:
-        print(contrasts)
         contrastctr = ev + 3
         for c in contrasts.keys():
 
