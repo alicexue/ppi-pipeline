@@ -102,6 +102,19 @@
     |  5  |  Sine basis functions |
     |  6  |  FIR basis functions  |
 
+5. To orthogonalize regressors, add an orthogonalize.txt file in the same directory as condition_key.json. Each line should specify what you would like to orthogonalize. Each line should have three values separated by spaces:  
+
+    The task number (prefixed with 'task')  
+    The EV number to be orthogonalized  
+    The EV number it is orthogonalized to    
+    
+    For example:  
+    ```  
+    taskdistance 1 3  
+    taskdistance 1 4  
+    taskdistance 2 6  
+    ```  
+
 ## Directory Structure:
 - Session directories are optional. If there aren't multiple sessions, omit the session label from EV file names.
 ```
@@ -131,6 +144,7 @@ basedir
             │   model_params.json
             │   condition_key.json
             │   task_contrasts.json
+            |   orthogonalize.txt
             │   interaction_key.json (for ppi)
             │   convolve_condition_key.json (for ppi)
             |   design_level<N>_custom.stub (optional)
