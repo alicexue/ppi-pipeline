@@ -338,8 +338,8 @@ def mk_level1_fsf_bbr(a):
     if os.path.exists(orthfile):
         f = open(orthfile)
         for l in f.readlines():
-            orth_tasknum = int(l.split()[0].replace('task', ''))
-            if orth_tasknum == tasknum:
+            orth_taskname = l.split()[0].replace('task', '')
+            if orth_taskname == a.taskname:
                 orth[int(l.split()[1])] = int(l.split()[2])
         f.close()
     else:
