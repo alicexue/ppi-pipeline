@@ -340,7 +340,12 @@ def mk_level1_fsf_bbr(a):
         for l in f.readlines():
             orth_taskname = l.split()[0].replace('task', '')
             if orth_taskname == a.taskname:
-                orth[int(l.split()[1])] = int(l.split()[2])
+                orth_ev = int(l.split()[1])
+                orth_ev_val = int(l.split()[2])
+                if orth_ev not in orth.keys():
+                    orth[orth_ev] = [orth_ev_val]
+                else:
+                    orth[orth_ev].append(orth_ev_val)
         f.close()
     else:
         print('no orthogonalization found')
@@ -622,7 +627,7 @@ def mk_level1_fsf_bbr(a):
 
         for evn in range(1, nevs + 1):
             if ev + 1 in orth:
-                if orth[ev + 1] == evn:
+                if evn in orth[ev + 1]:
                     outfile.write('set fmri(ortho%d.%d) 1\n' % (ev + 1, evn))
                 else:
                     outfile.write('set fmri(ortho%d.%d) 0\n' % (ev + 1, evn))
